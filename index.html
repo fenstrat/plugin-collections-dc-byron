@@ -1,49 +1,361 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+    <title>Make it extensible! Using PluginCollections so others can extend your module - Drupal Camp Byron 2019</title>
 
-		<link rel="stylesheet" href="css/reset.css">
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+    <link rel="shortcut icon" href="favicon.png" type="image/vnd.microsoft.icon" />
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/moon.css">
+    <style>
+      body {
+        background: #061745;
+      }
 
-		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/monokai.css">
+      h1, h2, h3, h4, h5, h6 {
+        text-transform: none !important;
+      }
+    </style>
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
-		</div>
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/monokai.css">
 
-		<script src="js/reveal.js"></script>
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+  </head>
 
-		<script>
-			// More info about config & dependencies:
-			// - https://github.com/hakimel/reveal.js#configuration
-			// - https://github.com/hakimel/reveal.js#dependencies
-			Reveal.initialize({
-				dependencies: [
-					{ src: 'plugin/markdown/marked.js' },
-					{ src: 'plugin/markdown/markdown.js' },
-					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true }
-				]
-			});
-		</script>
-	</body>
+  <body>
+
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+          <h2>Make it extensible!</h2>
+          <h3>Using PluginCollections so others can extend your module</h3>
+          <p>Drupal Camp Byron 2019</p>
+        </section>
+
+        <section>
+          <h2>Who?</h2>
+          <p>Saul Willers</p>
+          <p>Senior Backend Developer @ PreviousNext</p>
+          <p><a href="https://www.drupal.org/u/fenstrat">drupal.org/u/fenstrat</a></p>
+          <aside class="notes">
+            <p>1/16</p>
+            <ul>
+              <li>PNX clients; Amaysim, TfNSW, BCC</li>
+              <li>I live just up the road</li>
+              <li>20+ years web dev</li>
+              <li>10+ years Drupal full time</li>
+              <li>Drupal Chile, DGC</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>What?</h2>
+          <ul>
+            <li>Plugins</li>
+            <li>PluginsCollections:</li>
+            <ul>
+              <li>Configurable</li>
+              <li>Deployable</li>
+              <li>Dependencies</li>
+            </ul>
+          </ul>
+          <aside class="notes">
+            <p>2/16</p>
+            <ul>
+              <li>Introduce concepts</li>
+              <li>Lite on code</li>
+              <li>Lots of good examples to follow in core & contrib</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Plugins</h2>
+          <p>Like PHP native interfaces</p>
+          <p>Swappable bits of functionality</p>
+          <aside class="notes">
+            <p>3/16</p>
+            <ul>
+              <li>Small pieces of functionality that are swappable</li>
+              <li>Essentially OO replacement for info_hooks from D7</li>
+              <li>E.g. blocks</li>
+              <li>E.g. image transformations; scale, crop, desaturate, etc</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Discovery</h2>
+          <p>Tell Drupal about your thing</p>
+          <p>Types:</p>
+          <ul>
+            <li>Static</li>
+            <li>Hook</li>
+            <li>Annotated class</li>
+            <li>YAML</li>
+          </ul>
+          <aside class="notes">
+            <p>4/16</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>The problem</h2>
+          <p>Lots of configurable plugins</p>
+          <aside class="notes">
+            <p>5/16</p>
+            <ul>
+              <li>Series of plugins</li>
+              <li>Configurable, each has form</li>
+              <li>Each has own dependencies</li>
+              <li>Deployable with CMI</li>
+              <li>E.g. Text filters</li>
+              <li>How do we manage these?</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>The solution</h2>
+          <p>A configuration entity</p>
+          <aside class="notes">
+            <p>6/16</p>
+            <ul>
+              <li>Have their own configuration forms, just like content entities</li>
+              <li>Encapsulate the plugin configuration</li>
+              <li>Deployable via CMI</li>
+              <li>Integrate with dependency management API, can react to changes in other config</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Examples</h2>
+          <p>Config entities:</p>
+          <ul>
+            <li><a href="https://git.drupalcode.org/project/drupal/blob/HEAD/core/modules/filter/src/Entity/FilterFormat.php">filter format</a></li>
+            <li><a href="https://git.drupalcode.org/project/drupal/blob/HEAD/core/modules/image/src/Entity/ImageStyle.php">image style</a></li>
+            <li><a href="https://git.drupalcode.org/project/drupal/blob/HEAD/core/modules/workflows/src/Entity/Workflow.php">workflow</a></li>
+            <li><a href="https://git.drupalcode.org/project/workbench_access/blob/HEAD/src/Entity/AccessScheme.php">workbench access control scheme</a></li>
+          </ul>
+          <aside class="notes">
+            <p>7/16</p>
+            <ul>
+              <li>workbench_email, healthz</li>
+              <li>More recent = current best practice</li>
+              <li>For core, Workflow</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>PluginCollections</h2>
+          <p>Admins creat instances</p>
+          <p>Lazy loaded as needed</p>
+          <aside class="notes">
+            <p>8/16</p>
+            <ul>
+              <li>zero or more instances of each plugin</li>
+              <li>Extends LazyPluginCollection</li>
+              <li>Instantiated as needed</li>
+              <li>EntityWithPluginCollectionInterface</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <pre><code class="hljs php" data-trim contenteditable>
+class Workflow extends ConfigEntityBase
+  implements EntityWithPluginCollectionInterface {
+  ...
+  protected function getPluginCollection() {
+    return new DefaultLazyPluginCollection(
+      \Drupal::service('plugin.manager.workflows.type'),
+      $this->type, $this->type_settings
+    );
+  }
+  ...
+}
+          </code></pre>
+          <aside class="notes">
+            <p>9/16</p>
+            <ul>
+              <li>Has; 1) all the properties of a config entity (uuid, load(), etc)</li>
+              <li>2) tells Drupal how to load your collection of plugins</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Configuration forms</h2>
+          <p>Admins config the plugins</p>
+          <p>Normal Drupal form</p>
+          <p>Addition of SubFormState</p>
+          <aside class="notes">
+            <p>10/16</p>
+            <ul>
+              <li>SubFormState relatively new, > Drupal 8.2</li>
+              <li>E.g. Text filters doesn't use it, Workflow does</li>
+              <li>Better isolation error/validation handing for forms inside forms</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Schema</h2>
+          <p>workflows.schema.yml</p>
+          <pre><code class="hljs yml" data-trim contenteditable>
+workflows.workflow.*:
+  type: config_entity
+  label: 'Workflow'
+  mapping:
+    ...
+    type:
+      type: string
+      label: 'Workflow type'
+    type_settings:
+      type: workflow.type_settings.[%parent.type]
+          </code></pre>
+          <aside class="notes">
+            <p>11/16</p>
+            <ul>
+              <li>Define data structure of the config entities</li>
+              <li>type: content_moderation</li>
+              <li>type_settings: entries for each enabled plugin</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Deployable</h2>
+          <p>workflows.workflow.editorial.yml</p>
+          <pre><code class="hljs yml" data-trim contenteditable>
+type: content_moderation
+type_settings:
+  states:
+    draft:
+      label: Draft
+      published: false
+      default_revision: false
+    ...
+  transitions:
+    archive:
+      label: Archive
+      from:
+        - published
+      to: archived
+    ...
+          </code></pre>
+          <aside class="notes">
+            <p>12/16</p>
+            <ul>
+              <li>Enabled plugins create normal config entities</li>
+              <li>Deployable in normal CMI workflow</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Dependencies</h2>
+          <p>workflows.workflow.editorial.yml</p>
+          <pre><code class="hljs yml" data-trim contenteditable>
+dependencies:
+  config:
+    - node.type.blog_post
+    - node.type.page
+  module:
+    - content_moderation
+          </code></pre>
+          <aside class="notes">
+            <p>13/16</p>
+            <ul>
+              <li>Enabled plugins create normal config entities</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>On dependency removal</h2>
+          <pre><code class="hljs php" data-trim contenteditable>
+public function onDependencyRemoval(array $dependencies) {
+  $parent_changed_entity = parent::onDependencyRemoval($dependencies);
+  $plugin_changed_entity = $this->getTypePlugin()->onDependencyRemoval($dependencies);
+  return $plugin_changed_entity || $parent_changed_entity;
+}
+          </code></pre>
+          <aside class="notes">
+            <p>14/16</p>
+            <ul>
+              <li>On all config entities, from ConfigEntityInterface</li>
+              <li>Allows config entities to remove dependencies instead of being deleted themselves</li>
+              <li>E.g. if blog_post node type is delete</li>
+              <li>Some ongoing work in core to automate this, so it's not manual, 2579743</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Summary</h2>
+          <p>PluginCollections:</p>
+          <ul>
+            <li>Configure plugin extensions for your module</li>
+            <ul>
+              <li>Configurable</li>
+              <li>Deployable</li>
+              <li>Mangages dependencies</li>
+            </ul>
+          </ul>
+          <aside class="notes">
+            <p>15/16</p>
+          </aside>
+        </section>
+
+        <section>
+          <h2>Questions?</h2>
+          <aside class="notes">
+            <p>16/16</p>
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="js/reveal.js"></script>
+
+    <script>
+      // More info about config & dependencies:
+      // - https://github.com/hakimel/reveal.js#configuration
+      // - https://github.com/hakimel/reveal.js#dependencies
+      Reveal.initialize({
+        dependencies: [
+          { src: 'plugin/markdown/marked.js' },
+          { src: 'plugin/markdown/markdown.js' },
+          { src: 'plugin/notes/notes.js', async: true },
+          { src: 'plugin/highlight/highlight.js', async: true }
+        ]
+      });
+    </script>
+
+    <div class="share-reveal" style="position: absolute; bottom: 16px; left: 16px; z-index: 20;">
+      <svg style="width:75%;" xmlns="http://www.w3.org/2000/svg" width="395" height="39" viewBox="0 0 395 39" aria-labelledby="title desc" role="img">
+        <title id="title">PreviousNext</title>
+        <path fill="#FFFFFF" d="M0 1.6c0-.5.4-1 1-1h12.6c6.6 0 12 5.4 12 11.9 0 6.6-5.4 12.1-12 12.1H7v12.6c0 .5-.5 1-1 1H1c-.6 0-1-.5-1-1V1.6zm13.2 16.3c3 0 5.5-2.4 5.5-5.6 0-2.9-2.5-5.2-5.5-5.2H7v10.8h6.2zM30.7 1.6c0-.5.4-1 1-1H47c6.4 0 11.7 5.1 11.7 11.5 0 4.9-3.3 9-7.9 10.8l7.3 13.6c.4.7 0 1.6-.9 1.6h-5.6c-.5 0-.8-.3-.9-.5l-7.1-14.2h-6v13.7c0 .5-.5 1-1 1h-4.9c-.6 0-1-.5-1-1V1.6zm15.7 16c2.8 0 5.3-2.5 5.3-5.5 0-2.8-2.5-5.2-5.3-5.2h-8.7v10.7h8.7zm18.9-16c0-.5.4-1 1-1h21.8c.6 0 1 .5 1 1V6c0 .5-.4 1-1 1H72.3v8.8h13.2c.5 0 1 .5 1 1v4.5c0 .6-.5 1-1 1H72.3v9.4h15.9c.6 0 1 .5 1 1v4.4c0 .5-.4 1-1 1H66.3c-.6 0-1-.5-1-1V1.6zm27.5.3c-.3-.7.1-1.4.9-1.4h5.5c.5 0 .8.3.9.6l10.3 23.1h.4L121 1.1c.1-.3.4-.6.9-.6h5.5c.8 0 1.2.7.9 1.4L111.7 38c-.2.3-.4.6-.9.6h-.5c-.5 0-.8-.3-.9-.6L92.8 1.9zm39.3-.3c0-.5.5-1 1-1h5c.5 0 1 .5 1 1v35.5c0 .5-.5 1-1 1h-5c-.5 0-1-.5-1-1V1.6zM164.4 0c10.7 0 19.3 8.6 19.3 19.4 0 10.7-8.6 19.2-19.3 19.2-10.7 0-19.2-8.5-19.2-19.2 0-10.8 8.5-19.4 19.2-19.4m0 31.6c6.8 0 12.3-5.5 12.3-12.3 0-6.8-5.6-12.4-12.3-12.4-6.7 0-12.3 5.6-12.3 12.4 0 6.8 5.6 12.3 12.3 12.3m24.7-30c0-.5.5-1 1-1h5.1c.6 0 1 .5 1 1v21.9c0 4.6 3.1 8.1 7.8 8.1 4.7 0 7.8-3.6 7.8-8.1v-22c0-.5.4-1 1-1h5.1c.5 0 1 .5 1 1v22.3c0 8.1-6.5 14.7-15 14.7-8.4 0-14.9-6.6-14.9-14.7V1.6h.1zM225 32.8l1.9-3.3c.4-.8 1.3-.8 1.8-.4.3.2 4.6 3.3 8.1 3.3 2.8 0 4.9-1.8 4.9-4.1 0-2.7-2.3-4.6-6.8-6.4-5-2-10.1-5.3-10.1-11.6 0-4.8 3.5-10.3 12.1-10.3 5.5 0 9.7 2.8 10.7 3.6.5.3.7 1.2.3 1.8l-2 3.1c-.4.6-1.2 1.1-1.9.6-.4-.3-4.5-2.9-7.5-2.9-3.1 0-4.7 2-4.7 3.8 0 2.5 2 4.2 6.3 6 5.2 2.1 11.2 5.2 11.2 12.1 0 5.5-4.8 10.6-12.3 10.6-6.8 0-10.7-3.2-11.8-4.2-.5-.6-.7-.8-.2-1.7M256.9 1c0-.5.5-1 1-1h1.3l22.3 23.7h.1V1.6c0-.5.4-1 1-1h4.9c.5 0 1 .5 1 1v36.1c0 .5-.5 1-1 1h-1.3L263.9 14h-.1v23.1c0 .5-.4 1-1 1h-4.9c-.5 0-1-.5-1-1V1zm40.4.6c0-.5.4-1 1-1h21.8c.6 0 1 .5 1 1V6c0 .5-.4 1-1 1h-15.9v8.8h13.2c.5 0 1 .5 1 1v4.5c0 .6-.5 1-1 1h-13.2v9.4h15.9c.6 0 1 .5 1 1v4.4c0 .5-.4 1-1 1h-21.8c-.6 0-1-.5-1-1V1.6zM369.4 7h-8.2c-.6 0-1-.5-1-1V1.6c0-.5.4-1 1-1h23.4c.6 0 1 .5 1 1V6c0 .5-.4 1-1 1h-8.2v30.1c0 .5-.5 1-1 1h-5c-.5 0-1-.5-1-1V7z"/>
+        <path fill="#3DB7E2" d="M356.7 2c.4-.7 0-1.5-.9-1.5h-6.2c-.4 0-.8.3-.9.5l-6.9 11.3 4.2 6.4L356.7 2zm.3 34.6l-11-17.7-4.2 6.4 7.7 12.3c.1.2.5.5.9.5h5.8c.8 0 1.3-.8.8-1.5"/>
+        <path fill="#FFFFFF" d="M346 18.9l-.1-.1-4.2-6.4L334.6.8c-.2-.2-.4-.5-.9-.5h-6.4c-.9 0-1.4.8-.9 1.5l11.1 17.1-11.5 18c-.4.7 0 1.5 1 1.5h6c.4 0 .8-.3.9-.5l7.8-12.5.1-.1 4.2-6.4zm45.4-12c-1.8 0-3.2-1.5-3.2-3.2 0-1.8 1.4-3.2 3.2-3.2 1.8 0 3.2 1.5 3.2 3.2.1 1.7-1.4 3.2-3.2 3.2m.1-6.2c-1.7 0-2.9 1.3-2.9 3s1.3 2.9 2.9 2.9c1.7 0 2.9-1.3 2.9-3S393.1.7 391.5.7m.6 3.2l1 1.3h-.6l-1-1.2h-.8v1.2h-.5V1.9h1.5c.7 0 1.2.4 1.2 1s-.3.9-.8 1m-.5-1.5h-1v1.2h.9c.5 0 .8-.2.8-.6.1-.4-.2-.6-.7-.6"/>
+      </svg>
+    </div>
+
+  </body>
 </html>
